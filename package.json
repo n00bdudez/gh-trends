@@ -1,0 +1,14 @@
+{
+  "name": "gh-trends",
+  "version": "1.0.0",
+  "description": "GitHub Trending page with auto-updating JSON",
+  "main": "scripts/fetch-trending.js",
+  "scripts": {
+    "update": "node scripts/fetch-trending.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "fs-extra": "^11.1.1"
+  }
+}
