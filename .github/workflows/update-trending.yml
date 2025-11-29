@@ -19,7 +19,7 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install axios cheerio fs-extra
+        run: npm install
 
       - name: Fetch or Scrape Trending
         run: node scripts/fetch-trending.js
