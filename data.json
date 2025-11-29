@@ -1,0 +1,26 @@
+[
+  {
+    "name": "awesome-project",
+    "url": "https://github.com/user/awesome-project",
+    "desc": "An awesome project that does cool things",
+    "language": "JavaScript",
+    "stars": "1250",
+    "range": "daily"
+  },
+  {
+    "name": "cool-tool",
+    "url": "https://github.com/user/cool-tool",
+    "desc": "A useful tool for developers",
+    "language": "Python",
+    "stars": "850",
+    "range": "daily"
+  },
+  {
+    "name": "rusty-lib",
+    "url": "https://github.com/user/rusty-lib",
+    "desc": "Fast Rust library for fun",
+    "language": "Rust",
+    "stars": "420",
+    "range": "weekly"
+  }
+]
