@@ -1,0 +1,33 @@
+name: Update GitHub Trending
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # daily at 00:00 UTC
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install axios cheerio fs-extra
+
+      - name: Fetch or Scrape Trending
+        run: node scripts/fetch-trending.js
+
+      - name: Commit and Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          git commit -m "Update GitHub Trending [skip ci]" || echo "No changes"
+          git push
