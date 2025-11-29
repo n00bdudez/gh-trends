@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub Trending</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg1:#0d1117;--bg2:#161b22;--bg3:#21262d;
+--txt1:#c9d1d9;--txt2:#8b949e;
+--acc:#58a6ff;--acc-h:#79c0ff;
+--bor:#30363d;--suc:#3fb950;--warn:#d29922
+}
+[data-theme="light"]{
+--bg1:#fff;--bg2:#f6f8fa;--bg3:#fff;
+--txt1:#24292f;--txt2:#57606a;
+--acc:#0969da;--acc-h:#0550ae;
+--bor:#d0d7de;--suc:#1a7f37;--warn:#9a6700
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg1);color:var(--txt1);line-height:1.6;transition:background .3s,color .3s}
+a{text-decoration:none;color:var(--acc)}
+.flex{display:flex;gap:1rem;align-items:center}
+.flex-wrap{flex-wrap:wrap}
+header{background:var(--bg2);border-bottom:1px solid var(--bor);padding:1rem;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}
+.header-wrap{max-width:1400px;margin:0 auto;justify-content:space-between}
+h1{font-size:1.5rem;font-weight:600}
+.subtitle{color:var(--txt2);font-size:.875rem}
+.btn{background:var(--bg3);border:1px solid var(--bor);color:var(--txt2);padding:.5rem 1rem;border-radius:6px;cursor:pointer;font-size:.875rem;transition:all .2s;font-weight:500}
+.btn:hover{border-color:var(--acc);color:var(--txt1)}
+.btn.active{background:var(--acc);border-color:var(--acc);color:#fff}
+.filters{max-width:1400px;margin:1.5rem auto;padding:0 1rem}
+main{max-width:1400px;margin:0 auto;padding:1rem}
+.stats{justify-content:space-between;margin-bottom:1.5rem;padding:1rem;background:var(--bg2);border:1px solid var(--bor);border-radius:8px;display:none}
+.stats-item{display:flex;flex-direction:column;gap:.25rem}
+.stats-label{font-size:.75rem;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
+.stats-value{font-size:1.25rem;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem}
+.skeleton{background:var(--bg2);border:1px solid var(--bor);border-radius:12px;padding:1.5rem;animation:pulse 1.5s ease-in-out infinite}
+.skeleton-title{height:24px;background:var(--bg3);border-radius:4px;margin-bottom:1rem;width:70%}
+.skeleton-text{height:16px;background:var(--bg3);border-radius:4px;margin-bottom:.5rem}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.card{background:var(--bg2);border:1px solid var(--bor);border-radius:12px;padding:1.5rem;transition:all .3s;position:relative}
+.card-header{gap:.75rem;align-items:flex-start;display:flex}
+.card-name{flex:1}
+.card-name a{color:var(--acc);font-size:1.125rem;font-weight:600;word-break:break-word}
+.card-name a:hover{color:var(--acc-h);text-decoration:underline}
+.card-desc{color:var(--txt2);font-size:.875rem;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin:.75rem 0}
+.card-footer{gap:1rem;padding-top:1rem;border-top:1px solid var(--bor);display:flex}
+.lang{font-size:.875rem;color:var(--txt2);gap:.5rem;display:flex;align-items:center}
+.lang-dot{width:12px;height:12px;border-radius:50%}
+.stars{font-size:.875rem;color:var(--txt2);gap:.375rem;display:flex;align-items:center}
+.star-icon{width:16px;height:16px;fill:var(--warn)}
+footer{text-align:center;padding:2rem 1rem;margin-top:3rem;border-top:1px solid var(--bor);color:var(--txt2);font-size:.875rem}
+.error{text-align:center;padding:3rem 1rem;color:var(--txt2)}
+@media(max-width:768px){
+.header-wrap{flex-direction:column;align-items:flex-start}
+.filters{flex-direction:column;align-items:stretch}
+.stats{flex-direction:column}
+.grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body data-theme="dark">
+
+<header>
+  <div class="header-wrap flex flex-wrap">
+    <div>
+      <h1>🔥 GitHub Trending</h1>
+      <div class="subtitle">Updated daily via GitHub Actions</div>
+    </div>
+    <button class="btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
+  </div>
+</header>
+
+<div class="filters flex flex-wrap">
+  <button class="btn active" data-range="daily" onclick="filterRange('daily')">Daily</button>
+  <button class="btn" data-range="weekly" onclick="filterRange('weekly')">Weekly</button>
+  <button class="btn" data-range="monthly" onclick="filterRange('monthly')">Monthly</button>
+</div>
+
+<main>
+  <div class="stats flex" id="stats">
+    <div class="stats-item">
+      <span class="stats-label">Repos</span>
+      <span class="stats-value" id="count">0</span>
+    </div>
+    <div class="stats-item">
+      <span class="stats-label">Languages</span>
+      <span class="stats-value" id="langs">0</span>
+    </div>
+    <div class="stats-item">
+      <span class="stats-label">Updated</span>
+      <span class="stats-value" id="date">-</span>
+    </div>
+  </div>
+  
+  <div id="container" class="grid">
+    <div class="skeleton"><div class="skeleton-title"></div><div class="skeleton-text"></div></div>
+    <div class="skeleton"><div class="skeleton-title"></div><div class="skeleton-text"></div></div>
+    <div class="skeleton"><div class="skeleton-title"></div><div class="skeleton-text"></div></div>
+  </div>
+</main>
+
+<footer>
+  <p>Data from <a href="https://github.com/trending" target="_blank" rel="noopener">GitHub Trending</a></p>
+</footer>
+
+<script>
+const langColors={JavaScript:'#f1e05a',TypeScript:'#3178c6',Python:'#3572A5',Java:'#b07219','C++':'#f34b7d',C:'#555',Go:'#00ADD8',Rust:'#dea584',Ruby:'#701516',PHP:'#4F5D95',Swift:'#ffac45',Kotlin:'#A97BFF',HTML:'#e34c26',CSS:'#563d7c',Shell:'#89e051',Vue:'#41b883'};
+let allRepos=[],currentRange='daily';
+
+const fmt=n=>parseInt(String(n).replace(/,/g,''))>=1e3?(parseInt(String(n).replace(/,/g,''))/1e3).toFixed(1)+'k':n;
+const getColor=l=>langColors[l]||'#8b949e';
+
+function render(repos){
+  const c=document.getElementById('container');
+  if(!repos.length){c.innerHTML='<div class="error"><h2>No repos found</h2></div>';return;}
+  const frag=document.createDocumentFragment();
+  repos.forEach(r=>{
+    const div=document.createElement('div');div.className='card';
+    div.innerHTML=`<div class="card-header">
+      <svg class="icon" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"/></svg>
+      <div class="card-name"><a href="${r.url}" target="_blank">${r.name}</a></div>
+    </div>
+    <p class="card-desc">${r.desc||'No description'}</p>
+    <div class="card-footer">
+      <div class="lang"><span class="lang-dot" style="background:${getColor(r.language)}"></span>${r.language||'Unknown'}</div>
+      <div class="stars"><svg class="star-icon" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25zm0 2.445L6.615 5.5a.75.75 0 01-.564.41l-3.097.45 2.24 2.184a.75.75 0 01.216.664l-.528 3.084 2.769-1.456a.75.75 0 01.698 0l2.77 1.456-.53-3.084a.75.75 0 01.216-.664l2.24-2.183-3.096-.45a.75.75 0 01-.564-.41L8 2.694v.001z"/></svg>${fmt(r.stars)}</div>
+    </div>`;
+    frag.appendChild(div);
+  });
+  c.innerHTML='';c.appendChild(frag);
+  const langs=new Set(repos.map(r=>r.language).filter(Boolean));
+  document.getElementById('count').textContent=repos.length;
+  document.getElementById('langs').textContent=langs.size;
+  document.getElementById('date').textContent=new Date().toLocaleDateString();
+  document.getElementById('stats').style.display='flex';
+}
+
+async function load(){
+  try{
+    const res=await fetch('data.json');if(!res.ok)throw new Error('Fetch failed');
+    allRepos=await res.json();render(allRepos);
+  }catch(e){console.error('Load error:',e);document.getElementById('container').innerHTML='<div class="error"><h2>Failed to load</h2></div>';}
+}
+
+function filterRange(range){
+  currentRange=range;
+  document.querySelectorAll('.btn[data-range]').forEach(b=>b.classList.toggle('active',b.dataset.range===range));
+  render(allRepos.filter(r=>!r.range||r.range===range));
+}
+
+function toggleTheme(){
+  const body=document.body,theme=body.getAttribute('data-theme')==='dark'?'light':'dark';
+  body.setAttribute('data-theme',theme);
+  localStorage.setItem('theme',theme);
+  document.getElementById('theme-btn').textContent=theme==='dark'?'🌙 Dark':'☀️ Light';
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  const theme=localStorage.getItem('theme')||'dark';
+  document.body.setAttribute('data-theme',theme);
+  document.getElementById('theme-btn').textContent=theme==='dark'?'🌙 Dark':'☀️ Light';
+  load();
+});
+</script>
+
+</body>
+</html>
